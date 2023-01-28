@@ -51,7 +51,7 @@ class GameViewController:UIViewController, MTKViewDelegate {
     commandQueue.label = "main command queue"
     
     // Create library for project
-    let defaultLibrary = device.newDefaultLibrary()!
+    let defaultLibrary = device.makeDefaultLibrary()!
     let fragmentProgram = defaultLibrary.makeFunction(name: "passThroughFragment")!
     let vertexProgram = defaultLibrary.makeFunction(name: "passThroughVertex")!
     
@@ -86,11 +86,11 @@ class GameViewController:UIViewController, MTKViewDelegate {
     // use semaphore to encode 3 frames ahead
     let _ = inflightSemaphore.wait(timeout: DispatchTime.distantFuture)
     let commandBuffer = commandQueue.makeCommandBuffer()
-    commandBuffer.label = "Frame command buffer"
+    commandBuffer?.label = "Frame command buffer"
     
     // use completion handler to signal the semaphore when this frame is completed allowing the encoding of the next frame to proceed
     // use capture list to avoid any retain cycles if the command buffer gets retained anywhere besides this stack frame
-    commandBuffer.addCompletedHandler{ [weak self] commandBuffer in
+      commandBuffer?.addCompletedHandler{ [weak self] commandBuffer in
       if let strongSelf = self {
         strongSelf.inflightSemaphore.signal()
       }
@@ -98,28 +98,28 @@ class GameViewController:UIViewController, MTKViewDelegate {
     }
     
     if let renderPassDescriptor = view.currentRenderPassDescriptor, let currentDrawable = view.currentDrawable {
-      let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor)
-      renderEncoder.label = "render encoder"
+        let renderEncoder = commandBuffer?.makeRenderCommandEncoder(descriptor: renderPassDescriptor)
+        renderEncoder?.label = "render encoder"
       
-      renderEncoder.pushDebugGroup("draw star")
-      renderEncoder.setRenderPipelineState(pipelineState)
+        renderEncoder?.pushDebugGroup("draw star")
+        renderEncoder?.setRenderPipelineState(pipelineState)
       
-      renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, at: 0)
-      renderEncoder.setVertexBuffer(vertexColorBuffer, offset:0 , at: 1)
-      renderEncoder.drawPrimitives(type: .triangle,
+        renderEncoder?.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
+        renderEncoder?.setVertexBuffer(vertexColorBuffer, offset:0 , index: 1)
+        renderEncoder?.drawPrimitives(type: .triangle,
                                    vertexStart: 0,
                                    vertexCount: vertexData.count)
       
-      renderEncoder.popDebugGroup()
-      renderEncoder.endEncoding()
+        renderEncoder?.popDebugGroup()
+        renderEncoder?.endEncoding()
       
-      commandBuffer.present(currentDrawable)
+        commandBuffer?.present(currentDrawable)
     }
     
     // bufferIndex matches the current semaphore controled frame index to ensure writing occurs at the correct region in the vertex buffer
     bufferIndex = (bufferIndex + 1) % MaxBuffers
     
-    commandBuffer.commit()
+      commandBuffer?.commit()
   }
   
   
