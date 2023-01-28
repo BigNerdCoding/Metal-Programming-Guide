@@ -10,6 +10,7 @@ import UIKit
 import Metal
 import QuartzCore
 
+@available(iOS 13.0, *)
 class ViewController: UIViewController {
     
     // Properties
@@ -64,7 +65,7 @@ class ViewController: UIViewController {
         
         // Set the Timer
         timer = CADisplayLink(target: self, selector: #selector(gameloop))
-        timer.add(to: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
+        timer.add(to: RunLoop.main, forMode: RunLoop.Mode.default)
     }
 
     override func didReceiveMemoryWarning() {
