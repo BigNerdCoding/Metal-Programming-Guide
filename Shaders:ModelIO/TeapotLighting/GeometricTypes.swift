@@ -91,7 +91,7 @@ struct Matrix4x4
     {
         var mat = Matrix4x4()
         
-        let fovRadians = fieldOfViewY * Float32(M_PI / 180.0)
+        let fovRadians = fieldOfViewY * Float32(Double.pi / 180.0)
 
         let yScale = 1 / tan(fovRadians * 0.5)
         let xScale = yScale / aspect

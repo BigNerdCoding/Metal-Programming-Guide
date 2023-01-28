@@ -51,7 +51,7 @@ class GameViewController:UIViewController, MTKViewDelegate {
         commandQueue = device.makeCommandQueue()
         commandQueue.label = "main command queue"
         
-        let defaultLibrary = device.newDefaultLibrary()!
+        let defaultLibrary = device.makeDefaultLibrary()!
         let fragmentProgram = defaultLibrary.makeFunction(name: "lightingFragment")!
         let vertexProgram = defaultLibrary.makeFunction(name: "lightingVertex")!
         
@@ -88,17 +88,18 @@ class GameViewController:UIViewController, MTKViewDelegate {
         let asset = MDLAsset(url: url!, vertexDescriptor: desc, bufferAllocator: mtkBufferAllocator)
         
         do {
-            meshes = try MTKMesh.newMeshes(from: asset, device: device!, sourceMeshes: nil)
+            let (_, mtkMeshes) = try MTKMesh.newMeshes(asset: asset, device: device!)
+            meshes = mtkMeshes
         }
         catch let error {
             fatalError("\(error)")
         }
         
         // Vector Uniforms
-        let teapotColor = float4(0.7, 0.47, 0.18, 1.0)
-        let lightPosition = float4(5.0, 5.0, 2.0, 1.0)
-        let reflectivity = float3(1.0, 1.0, 1.0)
-        let intensity = float3(2.0, 2.0, 2.0)
+        let teapotColor = SIMD4<Float>(0.7, 0.47, 0.18, 1.0)
+        let lightPosition = SIMD4<Float>(5.0, 5.0, 2.0, 1.0)
+        let reflectivity = SIMD3<Float>(1.0, 1.0, 1.0)
+        let intensity = SIMD3<Float>(2.0, 2.0, 2.0)
         
         // Matrix Uniforms
         let yAxis = Vector4(x: 0, y: -1, z: 0, w: 0)
@@ -116,30 +117,30 @@ class GameViewController:UIViewController, MTKViewDelegate {
     func draw(in view: MTKView) {
         
         let commandBuffer = commandQueue.makeCommandBuffer()
-        commandBuffer.label = "Frame command buffer"
+        commandBuffer?.label = "Frame command buffer"
         
         // Generate render pass descriptor
         if let renderPassDescriptor = view.currentRenderPassDescriptor, let currentDrawable = view.currentDrawable {
-            let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor)
-            renderEncoder.label = "render encoder"
+            let renderEncoder = commandBuffer?.makeRenderCommandEncoder(descriptor: renderPassDescriptor)
+            renderEncoder?.label = "render encoder"
             
-            renderEncoder.setCullMode(MTLCullMode.back)
-            renderEncoder.pushDebugGroup("draw teapot")
-            renderEncoder.setRenderPipelineState(pipelineState)
+            renderEncoder?.setCullMode(MTLCullMode.back)
+            renderEncoder?.pushDebugGroup("draw teapot")
+            renderEncoder?.setRenderPipelineState(pipelineState)
             let mesh = (meshes?.first)!
             let vertexBuffer = mesh.vertexBuffers[0]
-            renderEncoder.setVertexBuffer(vertexBuffer.buffer, offset: vertexBuffer.offset, at: 0)
-            renderEncoder.setVertexBuffer(uniformBuffer, offset:0, at:1)
-            renderEncoder.setFragmentBuffer(uniformBuffer, offset: 0, at: 0)
+            renderEncoder?.setVertexBuffer(vertexBuffer.buffer, offset: vertexBuffer.offset, index: 0)
+            renderEncoder?.setVertexBuffer(uniformBuffer, offset:0, index:1)
+            renderEncoder?.setFragmentBuffer(uniformBuffer, offset: 0, index: 0)
             let submesh = mesh.submeshes.first!
-            renderEncoder.drawIndexedPrimitives(type: submesh.primitiveType, indexCount: submesh.indexCount, indexType: submesh.indexType, indexBuffer: submesh.indexBuffer.buffer, indexBufferOffset: submesh.indexBuffer.offset)
-            renderEncoder.popDebugGroup()
-            renderEncoder.endEncoding()
+            renderEncoder?.drawIndexedPrimitives(type: submesh.primitiveType, indexCount: submesh.indexCount, indexType: submesh.indexType, indexBuffer: submesh.indexBuffer.buffer, indexBufferOffset: submesh.indexBuffer.offset)
+            renderEncoder?.popDebugGroup()
+            renderEncoder?.endEncoding()
                 
-            commandBuffer.present(currentDrawable)
+            commandBuffer?.present(currentDrawable)
         }
         
-        commandBuffer.commit()
+        commandBuffer?.commit()
     }
     
     
